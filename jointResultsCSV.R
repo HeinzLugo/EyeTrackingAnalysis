@@ -4,8 +4,8 @@
 rm(list=ls())
 library(dplyr)
 library(data.table)
-loadFolderPath <- file.path("", "Users", "heinzlugo", "Dropbox", "EyeTrackingTests", "TestResults", "Individual")
-storeFolderPath <- file.path("", "Users", "heinzlugo", "Dropbox", "EyeTrackingTests", "TestResults", "Joint")
+loadFolderPath <- "CHANGE TO FOLDER"
+storeFolderPath <- "CHANGE TO FOLDER"
 filesList <- list.files(path = loadFolderPath)
 filesList <- filesList[order(nchar(filesList), filesList)]
 ## Step 1. Dataframe join.
