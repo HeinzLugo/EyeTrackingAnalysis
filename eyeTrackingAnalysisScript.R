@@ -5,21 +5,17 @@
 rm(list=ls())
 source("rawTestResultsImport.R")
 source("eyeTrackingAnalysis.R")
-# loadFolderPath <- CHANGE TO FOLDER LOCATION
-# loadFolderPath <- CHANGE TO FOLDER LOCATION
-# storeFolderPath <- CHANGE TO FOLDER LOCATION
-# storeFolderPath <- CHANGE TO FOLDER LOCATION
 
-
-# fileNamePath <- paste(loadFolderPath, "P4.tsv", sep = "/")
-# importDataResults <- rawTestResultsImport(fileNamePath = fileNamePath)
-# eyeTrackingResults <- eyeTrackingAnalysis(eyeTrackingDataFrame = importDataResults[[2]])
+##--FILE PATH. CAN BE CHANGED AS LONG AS FOLDER STRUCTURE IS THE AGREED ONE.--##
+loadFolderPath <- paste(getwd(), "RawData", sep = "/")
+storeFolderPath <- paste(getwd(), "AnalysisResults", "Individual", sep = "/")
 
 filesList <- list.files(path = loadFolderPath)
 filesList <- filesList[order(nchar(filesList), filesList)]
 for(i in 1:length(filesList))
 {
   print(i)
+  ##----THIS SECTION IS NEEDED FOR THE FIRST OF TESTS TO SKIP THE FIRST SAMPLE WHICH WAS A TEST FILE.----##
   # if(i != 1)
   # {
   #   ## Step 1. Raw test results import.
@@ -33,6 +29,7 @@ for(i in 1:length(filesList))
   #   # saveRDS(object = importDataResults, file = paste(fileNamePath, "importDataResults.Rds", sep = "/"))
   #   # saveRDS(object = eyeTrackingResults, file = paste(fileNamePath, "eyeTrackingResults.Rds", sep = "/"))
   # }
+  ##-----------------------------------------------------------------------------------------------------##
   ## Step 1. Raw test results import.
   fileNamePath <- paste(loadFolderPath, filesList[i], sep = "/")
   fileNamePath <- paste(fileNamePath, paste(filesList[i], ".tsv", sep = ""), sep = "/")

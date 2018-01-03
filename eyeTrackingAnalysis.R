@@ -122,7 +122,7 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
       tempDataFrame <- dplyr::filter(tempDataFrame, variable == variableFilter)
     }
     ## Step 2.1. Time above event.
-    tempDataFrame <- dplyr::filter(tempDataFrame, diameter > meanValue)
+    tempDataFrame <- dplyr::filter(tempDataFrame, diameter >= meanValue)
     tempEventList[[1]] <- tempDataFrame
     ## Step 2.2. Cumulative time above event.
     tempDataFrame <- dplyr::tbl_df(data.frame(eyeMovementType = eyeMovementTypeFilter,
@@ -182,11 +182,11 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
     if(eventMarkerColumnFilter != "combined")
     {
       tempResultIntermediate <- dplyr::filter(tempDataFrame, eventMarkerColumn == eventMarkerColumnFilter) %>%
-        dplyr::filter(durationEvent > tempDataFrameResults$meanValue[i])
+        dplyr::filter(durationEvent >= tempDataFrameResults$meanValue[i])
     }
     else
     {
-      tempResultIntermediate <- dplyr::filter(tempDataFrame, durationEvent > tempDataFrameResults$meanValue[i]) %>%
+      tempResultIntermediate <- dplyr::filter(tempDataFrame, durationEvent >= tempDataFrameResults$meanValue[i]) %>%
         dplyr::mutate(eventMarkerColumn = "combined")
     }
     if(i == 1)
@@ -303,11 +303,11 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
     if(eventMarkerColumnFilter != "combined")
     {
       tempResultIntermediate <- dplyr::filter(tempDataFrame, eventMarkerColumn == eventMarkerColumnFilter) %>%
-        dplyr::filter(distanceTraveled > tempDataFrameResults$meanValue[i])
+        dplyr::filter(distanceTraveled >= tempDataFrameResults$meanValue[i])
     }
     else
     {
-      tempResultIntermediate <- dplyr::filter(tempDataFrame, distanceTraveled > tempDataFrameResults$meanValue[i]) %>%
+      tempResultIntermediate <- dplyr::filter(tempDataFrame, distanceTraveled >= tempDataFrameResults$meanValue[i]) %>%
         dplyr::mutate(eventMarkerColumn = "combined")
     }
     if(i == 1)
@@ -361,7 +361,6 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
       }
     }
   }
-  # stopEventIndexes <- which(eyeTrackingDataFrame$event == stopEventNames)
   if(length(startEventIndexes) != length(stopEventIndexes))
   {
     stop("A start event does not have the corresponding stop event.")
@@ -401,25 +400,46 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
                                                   minValue = min(difference, na.rm = TRUE),
                                                   sampleNumber = length(eventNames))
     tempEventList[[3]] <- tempDataFrameIntermediate
-    browser()
+    tempDataFrameResults <- dplyr::ungroup(tempDataFrameResults)
     ## Step 5.4. Event duration above the mean.
-    tempResult <- dplyr::filter(tempDataFrameResults, difference > tempDataFrameIntermediate$meanValue)
-    tempEventList[[4]] <- tempResult
-    browser()
-    ## Step 5.5. Cumulative event duration above the mean.
     eventsNamesTypes <- unique(tempDataFrameResults$eventNames)
-    # for(i in 1:length(eventsNamesTypes))
-    # {
-    #   tempResult <- 
-    # }
-    tempDataFrameIntermediate <- tbl_df(data.frame(timeAboveMean = sum(tempResult$difference), percentageTimeAboveMeanOnlyS2S = sum(tempResult$difference) / sum(tempDataFrameResults$difference), percentageTimeAboveMean = sum(tempResult$difference) / (nrow(eyeTrackingDataFrame) * deltaTime)))
+    for(i in 1:length(eventsNamesTypes))
+    {
+      tempDataFrame <-  dplyr::filter(tempDataFrameResults, eventNames == eventsNamesTypes[i]) %>%
+        dplyr::filter(difference >= dplyr::filter(tempDataFrameIntermediate, eventNames == eventsNamesTypes[i])$meanValue)
+      if(i == 1)
+      {
+        tempResult <- tempDataFrame
+      }
+      else
+      {
+        tempResult <- rbind.data.frame(tempResult, tempDataFrame)
+      }
+    }
+    tempEventList[[4]] <- tempResult
+    ## Step 5.5. Cumulative event duration above the mean.
+    for(i in 1:length(eventsNamesTypes))
+    {
+      tempDataFrame <- dplyr::filter(tempResult, eventNames == eventsNamesTypes[i])
+      tempDataFrame <- tbl_df(data.frame(eventNames = unique(tempDataFrame$eventNames),
+                                         timeAboveMean = sum(tempDataFrame$difference), 
+                                         percentageTimeAboveMeanEvent = sum(tempDataFrame$difference) / sum(dplyr::filter(tempDataFrameResults, eventNames == eventsNamesTypes[i])$difference), 
+                                         percentageTimeAboveMean = sum(tempDataFrame$difference) / (nrow(eyeTrackingDataFrame) * deltaTime)))
+      if(i == 1)
+      {
+        tempDataFrameIntermediate <- tempDataFrame
+      }
+      else
+      {
+        tempDataFrameIntermediate <- rbind.data.frame(tempDataFrameIntermediate, tempDataFrame)
+      }
+    }
     tempEventList[[5]] <- tempDataFrameIntermediate
-    browser()
     ## Step 5.6. Time spent at event.
     tempDataFrameResults <- tempEventList[[2]]
-    tempDataFrameResults <- data.frame(timeLookAtScreen = sum(tempDataFrameResults$difference), percentageTimeLookAtScreen = sum(tempDataFrameResults$difference) / (nrow(eyeTrackingDataFrame) * deltaTime))
+    tempDataFrameResults <- dplyr::group_by(tempDataFrameResults, eventNames)
+    tempDataFrameResults <- dplyr::summarise(tempDataFrameResults, timeAtEvent = sum(difference), percentageTimeAtEvent = timeAtEvent / (nrow(eyeTrackingDataFrame) * deltaTime))
     tempEventList[[6]] <- tempDataFrameResults
-    browser()
   }
   else
   {
