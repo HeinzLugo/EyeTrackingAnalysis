@@ -28,7 +28,7 @@ rawTestResultsImport <- function(fileNamePath)
   ## Step 3. Add event marker column.
   eventMarkerColumn <- vector(mode = "character", length = nrow(rawTable))
   rawTable$event <- tolower(rawTable$event)
-  startEventIndexes <- grep(pattern = "^start(?!lookatscreen)", x = rawTable$event, perl = TRUE)
+  startEventIndexes <- grep(pattern = "^start(.+)", x = rawTable$event, perl = TRUE)
   eventNames <- sub(pattern = "^start", replacement = "", x = rawTable$event[startEventIndexes])
   stopEventIndexes <- as.character(sapply(eventNames, function (x) paste("stop", x, sep = "")))
   uniqueStopEvents <- unique(stopEventIndexes)
@@ -55,7 +55,25 @@ rawTestResultsImport <- function(fileNamePath)
   rawTable <- dplyr::mutate(rawTable, eventMarkerColumn)
   rm(eventMarkerColumn)
   ## Step 3. Format correction for relevant columns.
-  numericColumnsIdentifier <- c(4:9, 11:14)
+  if(length(names(rawTable)) != 16 | length(names(rawTable)) != 15)
+  {
+    if("eyeMovementTypeIndex" %in% names(rawTable))
+    {
+      numericColumnsIdentifier <- c(4:9, 11:14)
+    }
+    else if(!("eyeMovementTypeIndex" %in% names(rawTable)))
+    {
+      numericColumnsIdentifier <- c(4:9, 11:13)
+    }
+    else
+    {
+      stop("The column data fields from the dataframe do not coincide with the expected fields.")
+    }
+  }
+  else
+  {
+    stop("The column data fields from the dataframe do not coincide with the expected fields.")
+  }
   rawTable[, numericColumnsIdentifier] <- apply(X = rawTable[, numericColumnsIdentifier], MARGIN = 2, FUN = function(x) as.numeric(x))
   ## Step 4. Return of the processed dataframe.
   resultsList <- vector(mode = "list", length = 2)

@@ -89,7 +89,7 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
   resultsDataFrame <- rbind.data.frame(resultsDataFrame, tempDataFrame)
   resultsDataFrame <- dplyr::filter(resultsDataFrame, eventMarkerColumn != "")
   resultsList[[1]] <- resultsDataFrame
-  
+
   ##---SECTION 2. TIME ABOVE MEAN PUPIL DIAMETER---##
   ## Step 2. Time above mean pupil diameter.
   analysisDataFrame <- dplyr::select(eyeTrackingDataFrame, recordingTimestamp, pupilDiameterLeft, pupilDiameterRight, eyeMovementType, eventMarkerColumn)
@@ -136,7 +136,7 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
   }
   timeAboveEventList[[length(timeAboveEventList)]] <- eventDetailsDataFrame
   resultsList[[2]] <- timeAboveEventList
-  
+
   ##---SECTION 3. FIXATION DURATION---##
   ## Step 3. Fixation duration.
   tempEventList <- vector(mode = "list", length = 6)
@@ -212,7 +212,7 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
   tempDataFrameResults <- dplyr::mutate(tempDataFrameResults, percentageTimeFixation = timeFixation / (nrow(eyeTrackingDataFrame) * deltaTime))
   tempEventList[[6]] <- tempDataFrameResults
   resultsList[[3]] <- tempEventList
-  
+
   ##---SECTION 4. SACCADE DURATION---##
   ## Step 4. Saccade duration.
   tempEventList <- vector(mode = "list", length = 5)
@@ -334,11 +334,11 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
   tempDataFrameResults <- dplyr::mutate(tempDataFrameResults, percentageTimeSaccade = timeSaccade / (nrow(eyeTrackingDataFrame) * deltaTime))
   tempEventList[[5]] <- tempDataFrameResults
   resultsList[[4]] <- tempEventList
-
+  
   ##---SECTION 5. EVENT DURATION---##
   tempEventList <- vector(mode = "list", length = 6)
   ## Step 5.1. Look at event detections.
-  startEventIndexes <- grep(pattern = "^startlookat.+", x = eyeTrackingDataFrame$event)
+  startEventIndexes <- grep(pattern = "^startlookat.+|startsegment.+", x = eyeTrackingDataFrame$event, perl = TRUE)
   eventNames <- sub(pattern = "^start", replacement = "", x = eyeTrackingDataFrame$event[startEventIndexes])
   stopEventNames <- as.character(sapply(eventNames, function (x) paste("stop", x, sep = "")))
   stopEventNames <- unique(stopEventNames)
@@ -443,12 +443,12 @@ eyeTrackingAnalysis <- function(eyeTrackingDataFrame)
   }
   else
   {
-    tempEventList[[1]] <- "No look at events detected."
-    tempEventList[[2]] <- "No look at events detected."
-    tempEventList[[3]] <- "No look at events detected."
-    tempEventList[[4]] <- "No look at events detected."
-    tempEventList[[5]] <- "No look at events detected."
-    tempEventList[[6]] <- "No look at events detected."
+    tempEventList[[1]] <- "No events of interested detected."
+    tempEventList[[2]] <- "No events of interested detected."
+    tempEventList[[3]] <- "No events of interested detected."
+    tempEventList[[4]] <- "No events of interested detected."
+    tempEventList[[5]] <- "No events of interested detected."
+    tempEventList[[6]] <- "No events of interested detected."
   }
   resultsList[[5]] <- tempEventList
   resultsList
